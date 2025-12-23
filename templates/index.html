@@ -1,59 +1,233 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}BCDC Drone Tracker{% endblock %}</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}BCDC Drone Tracker{% endblock %}</title>
 
-    <!-- Link to the external CSS file -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <!-- 1) Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
+  <!-- 2) Leaflet core JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- 3) RotatedMarker plugin -->
+  <script src="https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js"></script>
+
+  <!-- 4) Plotly for graphs -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <!-- Your custom styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
 </head>
 <body>
-    <!-- Header Navigation Bar -->
-    <div class="header">
-        <div class="nav-title">BCDC Drone Tracker</div>
-        
-        <button onclick="location.href='/'">Home</button>
+  <!-- Header Navigation Bar -->
+  <div class="header">
+    <div class="nav-title">
+      <img src="{{ url_for('static', filename='images/BCDC_LOGO.svg') }}"
+           alt="BCDC Logo" class="header-logo" />
+    </div>
+    <div class="nav-menu">
+      <button onclick="location.href='/'">Home</button>
+      <div class="dropdown">
+        <button class="dropbtn">Drones ▾</button>
+        <div class="dropdown-content">
+          {% for drone in drones %}
+            <a href="{{ url_for('views.drone_page', call_sign=drone) }}">Drone {{ drone }}</a>
+          {% endfor %}
+        </div>
+      </div>
+      <button onclick="document.getElementById('confirmModal').style.display='block'">
+        Delete History
+      </button>
+    </div>
 
-        <div class="dropdown">
-            <button class="dropbtn">Drones ▾</button>
-            <div class="dropdown-content">
-                <a href="/droneA">Drone A</a>
-                <a href="/droneB">Drone B</a>
-                <a href="/droneJ">Drone J</a>
-            </div>
+    <!-- Modal dialog -->
+    <div id="confirmModal"
+         style="display:none;
+                position: fixed;
+                top: 40%; left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border: 1px solid #aaa;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.3);
+                z-index: 999;">
+      <p>Are you sure you want to delete all drone history?</p>
+      <button onclick="confirmReset()" style="margin-right: 10px;">Yes</button>
+      <button onclick="document.getElementById('confirmModal').style.display='none'">
+        Cancel
+      </button>
+    </div>
+    <script>
+      function confirmReset() {
+        fetch('/reset_history', { method: 'POST' })
+          .then(() => location.reload());
+      }
+    </script>
+  </div>
+
+  <!-- expose JS globals -->
+  <script>
+    window.droneCallSigns = JSON.parse('{{ drones | tojson | safe }}');
+  </script>
+
+  <div>
+    {% block content %}
+      <h1 style="text-align: center;">BCDC Drone Tracker</h1>
+
+      <!-- Two side-by-side maps, each with a label underneath -->
+      <div class="splitmap-container">
+        <!-- Left panel: all drones map + static “All Drones” bar -->
+        <div class="map-box-stack">
+          <div id="map-all" class="map-box"></div>
+          <div id="all-drones-label" class="zoom-label">All Drones</div>
         </div>
 
-        <button onclick="location.href='/data'">JSON Display Test</button>
-        <button onclick="location.href='/inputting'">User Input Test</button>
-    </div>
+        <!-- Right panel: single-drone map + dynamic zoom-label -->
+        <div class="map-box-stack">
+          <div id="map-single" class="map-box"></div>
+          <div id="zoomed-drone-label" class="zoom-label">Zoomed drone: —</div>
+        </div>
+      </div>
 
-    <!-- Page-Specific Content -->
-    <div>
-        {% block content %}
-            <h1 style="text-align: center;">Real-Time Aircraft Tracker</h1>
+      <!-- Drone data summary boxes -->
+      <div id="drone-data-container" class="drone-data-container"></div>
 
-            <!-- Two side-by-side maps -->
-            <div class="map-container">
-                <div id="map-all" class="map-box"></div>
-                <div id="map-single" class="map-box"></div>
+      <!-- Homepage Graphs -->
+      <h2 style="text-align:center;">Airspeed &amp; Altitude</h2>
+      <div id="homepage-graphs"
+           style="display: flex; flex-wrap: wrap; justify-content: space-around;">
+        {% for drone in drones %}
+          <div class="graph-box"
+               style="width:45%; margin:20px; position:relative;">
+            <h3>Drone {{ drone }}</h3>
+            <div class="counter-box"
+                 style="position:absolute; top:10px; right:10px;
+                        background:rgba(255,255,255,0.8);
+                        padding:6px; border-radius:5px; text-align:right;">
+              <p style="margin:0;font-size:14px;">
+                Airspeed: <span id="ctr-{{ drone }}-airspeed">--</span> kt
+              </p>
+              <p style="margin:0;font-size:14px;">
+                Altitude: <span id="ctr-{{ drone }}-altitude">--</span> ft
+              </p>
             </div>
+            <div id="graph-home-{{ drone }}" style="height:300px;"></div>
+          </div>
+        {% endfor %}
+      </div>
 
-            <!-- Drone data boxes below the maps -->
-            <div id="drone-data-container" class="drone-data-container">
-                <!-- Dynamically populated data boxes will go here -->
-            </div>
+      <script>
+        const droneList = JSON.parse('{{ drones | tojson | safe }}');
+        const graphState = {};
 
-            <!-- Leaflet and Custom JS -->
-            <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-            <script src="{{ url_for('static', filename='js/splitmap.js') }}"></script>
-            <script src="{{ url_for('static', filename='js/droneData.js') }}"></script>
-        {% endblock %}
-    </div>
+        function updateHomepageCounters(callSign, airspeed, altitude) {
+          document.getElementById(`ctr-${callSign}-airspeed`)
+                  .textContent = airspeed.toFixed(2);
+          document.getElementById(`ctr-${callSign}-altitude`)
+                  .textContent = altitude.toFixed(0);
+        }
 
+        function parseZulu(z) { return new Date(z); }
+        function windowStart(dt) { return new Date(dt.getTime() - 60_000); }
+
+        // Initialize each drone’s plot
+        droneList.forEach(callSign => {
+          graphState[callSign] = { counter: 0 };
+
+          Plotly.newPlot(
+            `graph-home-${callSign}`,
+            [
+              { x: [], y: [], mode: 'lines', name: 'Airspeed (knots)' },
+              { x: [], y: [], mode: 'lines', name: 'Altitude (ft)', yaxis: 'y2' }
+            ],
+            {
+              title: `Airspeed & Altitude — ${callSign}`,
+              legend: {
+                orientation: 'h',
+                x: 0.5, xanchor: 'center',
+                y: -0.2, yanchor: 'top'
+              },
+              margin: { t: 60, b: 70 },
+              xaxis: {
+                type: 'date',
+                range: [ windowStart(new Date()), new Date() ],
+                rangeslider: { visible: true }
+              },
+              yaxis:   { title: 'Airspeed (knots)' },
+              yaxis2:  { title: 'Altitude (ft)', overlaying: 'y', side: 'right' }
+            }
+          );
+
+          // Load history
+          fetch(`/data/${callSign}`)
+            .then(res => res.json())
+            .then(data => {
+              if (!Array.isArray(data)) return;
+              const times  = data.map(d => parseZulu(d.time_measured));
+              const speeds = data.map(d => d.velocity.airspeed * 1.94384);
+              const alts   = data.map(d => d.position.altitude);
+
+              graphState[callSign].counter = times.length;
+              Plotly.extendTraces(
+                `graph-home-${callSign}`,
+                { x: [times, times], y: [speeds, alts] },
+                [0,1]
+              );
+
+              if (times.length) {
+                const last = times[times.length - 1];
+                Plotly.relayout(
+                  `graph-home-${callSign}`,
+                  { 'xaxis.range': [ windowStart(last), last ] }
+                );
+                updateHomepageCounters(
+                  callSign,
+                  speeds[speeds.length - 1],
+                  alts[alts.length - 1]
+                );
+              }
+            })
+            .catch(console.error);
+        });
+
+        // Poll for real-time updates
+        setInterval(() => {
+          droneList.forEach(callSign => {
+            fetch(`/data/${callSign}`)
+              .then(res => res.json())
+              .then(data => {
+                const state = graphState[callSign];
+                if (!Array.isArray(data) || data.length <= state.counter) return;
+
+                data.slice(state.counter).forEach(pt => {
+                  state.counter++;
+                  const t  = parseZulu(pt.time_measured);
+                  const sp = pt.velocity.airspeed * 1.94384;
+                  const al = pt.position.altitude;
+
+                  Plotly.extendTraces(
+                    `graph-home-${callSign}`,
+                    { x: [[t], [t]], y: [[sp], [al]] },
+                    [0,1]
+                  );
+                  updateHomepageCounters(callSign, sp, al);
+                  Plotly.relayout(
+                    `graph-home-${callSign}`,
+                    { 'xaxis.range': [ windowStart(t), t ] }
+                  );
+                });
+              })
+            .catch(console.error);
+          });
+        }, 1000);
+      </script>
+
+      <!-- 5) Split‐map logic -->
+      <script src="{{ url_for('static', filename='js/splitmap.js') }}"></script>
+    {% endblock %}
+  </div>
 </body>
 </html>
+
