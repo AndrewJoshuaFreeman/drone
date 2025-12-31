@@ -5,7 +5,7 @@
 
 Overview
 --------
-This project implements a real-time combat display and analytics system for tracking autonomous drones during research and testing operations. The system ingests live telemetry data from multiple unmanned platforms, processes it through a Python-based API, and visualizes drone positions and performance metrics via an interactive web interface. This was built for the Bush Combat Development Complex in coordination with Corpus Christi's Autonomy Research Institute
+This project implements a real-time combat display and analytics system for tracking autonomous drones during research and testing operations. The system ingests live telemetry data from multiple unmanned platforms, processes it through a Python-based API, and visualizes drone positions and performance metrics via an interactive web interface. This was built for the [Bush Combat Development Complex](https://bcdc.tamus.edu/) in coordination with Corpus Christi's [Autonomy Research Institute](https://www.tamucc.edu/autonomy-research-institute/)
 
 The primary goals of this project were:
 
