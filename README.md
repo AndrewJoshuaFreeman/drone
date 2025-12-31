@@ -5,12 +5,12 @@
 
 Overview
 --------
-This project implements a real-time combat display and analytics system for tracking autonomous drones during research and testing operations. The system ingests live telemetry data from multiple unmanned platforms, processes it through a Python-based API, and visualizes drone positions and performance metrics via an interactive web interface.
+This project implements a real-time combat display and analytics system for tracking autonomous drones during research and testing operations. The system ingests live telemetry data from multiple unmanned platforms, processes it through a Python-based API, and visualizes drone positions and performance metrics via an interactive web interface. This was built for the Bush Combat Development Complex in coordination with Corpus Christi's Autonomy Research Institute
 
-The primary goals of this project are:
+The primary goals of this project were:
 
-- Real-time situational awareness for autonomous systems
-- Low-latency telemetry ingestion and visualization
+- Real time situational awareness for autonomous systems
+- Low latency telemetry ingestion and visualization
 - Scalable architecture for research and operational experimentation
 
 This system was designed and built from scratch to support autonomy research and operational analysis.
@@ -57,10 +57,10 @@ Architecture Flow:
 Key Features
 ------------
 
-- Real-time tracking of multiple autonomous drones
+- Real time tracking of multiple autonomous drones
 - Live geospatial visualization of drone positions
-- Low-latency telemetry updates
-- Per-drone statistics and performance analytics
+- Low latency telemetry updates
+- Per drone statistics and performance analytics
 - Continuously updating graphs and metrics
 - Modular and extensible system design
 
@@ -73,7 +73,7 @@ The API is designed to ingest structured telemetry data, including but not limit
 - Latitude, longitude, and altitude
 - Velocity and heading
 - Timestamped status updates
-- Mission- or research-specific data fields
+- Mission or research specific data fields
 
 The system is extensible and can support additional telemetry formats and autonomous platforms with minimal modification.
 
@@ -82,23 +82,25 @@ Technologies Used
 
 - **Backend**: Python (REST API, telemetry processing)
 - **Frontend**: Web-based interactive visualization (HTML, JavaScript, CSS)
-- **Data Visualization**: Live-updating charts and graphs
-- **Networking**: Real-time data streaming and low-latency updates
+- **Data Visualization**: Live-updating charts and graphs (Jinja2, Plotly)
+- **Networking**: Real time data streaming and low latency updates
 
 Use Cases
 ---------
 
 - Monitoring autonomous drone behavior during live testing
-- Supporting real-time situational awareness for research teams
+- Supporting real time situational awareness for research teams
 - Analyzing performance metrics and trends across multiple platforms
-- Providing a foundation for future autonomy and command-and-control visualization tools
+- Providing a foundation for future autonomy and command and control visualization tools
 
 Project Status
 --------------
 
-This project is intended for research and educational purposes. It is not designed for production deployment or operational combat use.
+This project is intended for research and educational purposes. It is not designed for production deployment or operational combat use, ie make sure that you test everything if you intend to use it.
 
-Disclaimer
+Further Infomation
 ----------
 
-This repository contains no classified, sensitive, or restricted information. All implementations are for academic and research demonstration only.
+This repository contains no classified, sensitive, or restricted information - all sensitive info has been redacted.
+If interested, please contact me, I can answer any of your questions to the best of my ability!
+
