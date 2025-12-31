@@ -1,9 +1,10 @@
 # Autonomous Drone Combat Display System
 
-Overview
---------
 ![Main Display](static/main.png)
 
+
+Overview
+--------
 This project implements a real-time combat display and analytics system for tracking autonomous drones during research and testing operations. The system ingests live telemetry data from multiple unmanned platforms, processes it through a Python-based API, and visualizes drone positions and performance metrics via an interactive web interface.
 
 The primary goals of this project are:
@@ -13,6 +14,14 @@ The primary goals of this project are:
 - Scalable architecture for research and operational experimentation
 
 This system was designed and built from scratch to support autonomy research and operational analysis.
+
+## Screenshots
+
+### Analytics Dashboard
+![Data Page](static/data.png)
+
+### Individual Drone View
+![Single Drone Page](static/individual.png)
 
 System Architecture
 -------------------
@@ -41,9 +50,9 @@ Architecture Flow:
       +-----+-----+
       |           |
       v           v
-    Interactive   Analytics and
-    Combat Display   Statistics
-    Map           Dashboard
+Interactive     Analytics and
+Combat Display  Statistics
+Map             Dashboard
 
 Key Features
 ------------
