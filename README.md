@@ -2,6 +2,7 @@
 
 Overview
 --------
+![Main Display](main/static/main.png)
 
 This project implements a real-time combat display and analytics system for tracking autonomous drones during research and testing operations. The system ingests live telemetry data from multiple unmanned platforms, processes it through a Python-based API, and visualizes drone positions and performance metrics via an interactive web interface.
 
