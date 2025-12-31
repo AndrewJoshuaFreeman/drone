@@ -49,10 +49,10 @@ Architecture Flow:
             |
       +-----+-----+
       |           |
-      v           v
-Interactive     Analytics and
-Combat Display  Statistics
-Map             Dashboard
+      v           -- v
+    Interactive     Analytics and
+    Combat Display  Statistics
+    Map             Dashboard
 
 Key Features
 ------------
